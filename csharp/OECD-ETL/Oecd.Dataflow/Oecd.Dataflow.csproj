@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Autofac" Version="6.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Oecd.Data.Common\Oecd.Data.Common.csproj" />
+    <ProjectReference Include="..\Oecd.Data.External\Oecd.Data.External.csproj" />
+    <ProjectReference Include="..\Oecd.Dataflow.Data\Oecd.Dataflow.Data.csproj" />
+  </ItemGroup>
+
+</Project>
