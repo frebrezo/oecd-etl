@@ -1,5 +1,6 @@
 package org.wonkim.oecdetl.batch;
 
+import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.batch.item.ItemProcessor;
 import org.wonkim.oecdetl.external.OecdDataResponseTransformer;
 import org.wonkim.oecdetl.external.dto.OecdDataResponse;
@@ -8,8 +9,6 @@ import org.wonkim.oecdetl.external.dto.OecdDataResponseDataSetSeriesValue;
 import org.wonkim.oecdetl.external.dto.OecdDataResponseStructureDimensionSeries;
 import org.wonkim.oecdetl.model.GenderEnt1;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,8 +28,7 @@ public class GenderEnt1ItemProcessor implements ItemProcessor<OecdDataResponse, 
     public List<GenderEnt1> process(OecdDataResponse item) {
         List<GenderEnt1> result = new ArrayList<GenderEnt1>();
 
-        // https://www.baeldung.com/java-measure-elapsed-time
-        Instant startTime = Instant.now();
+        StopWatch sw = StopWatch.createStarted();
         // https://www.baeldung.com/java-list-to-map
         Map<Integer, OecdDataResponseStructureDimensionSeries> seriesStructure = item.getStructure().getDimensions().getSeries().stream().collect(
                 Collectors.toMap(OecdDataResponseStructureDimensionSeries::getKeyPosition, Function.identity()));
@@ -51,10 +49,9 @@ public class GenderEnt1ItemProcessor implements ItemProcessor<OecdDataResponse, 
                 }
             }
         }
-        Instant endTime = Instant.now();
-        double totalSeconds = Duration.between(startTime, endTime).toMillis() / 1000;
+        sw.stop();
 
-        System.out.println(String.format("TransformOecdDataResponseToGenderEnt1 complete [%f] s.", totalSeconds));
+        System.out.println(String.format("TransformOecdDataResponseToGenderEnt1 complete [%f] s.", (sw.getTime() / 1000.0)));
         return result;
     }
 }

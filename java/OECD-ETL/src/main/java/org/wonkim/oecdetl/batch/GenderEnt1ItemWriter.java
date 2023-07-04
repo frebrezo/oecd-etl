@@ -1,5 +1,6 @@
 package org.wonkim.oecdetl.batch;
 
+import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -7,8 +8,6 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSourceUtils;
 import org.wonkim.oecdetl.model.GenderEnt1;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -39,18 +38,20 @@ VALUES
         List<GenderEnt1> commitItems = new ArrayList<>();
         totalRecords = 0;
 
-        Instant startTime = Instant.now();
+        StopWatch sw = new StopWatch();
+        sw.start();
+        StopWatch commitSw = StopWatch.createStarted();
         for (int i = 0; i < items.size(); ++i) {
             if (commitItems.size() > 0 && commitItems.size() % COMMIT_SIZE == 0) {
                 SqlParameterSource[] params = SqlParameterSourceUtils.createBatch(commitItems);
                 int[] updateCounts = _jdbcTemplate.batchUpdate(INSERT_SQL, params);
                 int updateCount = Arrays.stream(updateCounts).sum();
                 totalRecords += updateCount;
-                Instant endTime = Instant.now();
-                double totalSeconds =  Duration.between(startTime, endTime).toMillis() / 1000;
-                System.out.println(String.format("Committed records [%d]/[%d] in [%f] s.", updateCount, totalRecords, totalSeconds));
+                commitSw.stop();
+                System.out.println(String.format("Committed records [%d]/[%d] in [%f] s.", updateCount, totalRecords, (commitSw.getTime() / 1000.0)));
                 commitItems.clear();
-                startTime = Instant.now();
+                commitSw.reset();
+                commitSw.start();
             }
             commitItems.add(items.get(i));
         }
@@ -59,9 +60,10 @@ VALUES
             int[] updateCounts = _jdbcTemplate.batchUpdate(INSERT_SQL, params);
             int updateCount = Arrays.stream(updateCounts).sum();
             totalRecords += updateCount;
-            Instant endTime = Instant.now();
-            double totalSeconds =  Duration.between(startTime, endTime).toMillis() / 1000;
-            System.out.println(String.format("Committed records [%d]/[%d] in [%f] s.", updateCount, totalRecords, totalSeconds));
+            commitSw.stop();
+            System.out.println(String.format("Committed records [%d]/[%d] in [%f] s.", updateCount, totalRecords, (commitSw.getTime() / 1000.0)));
         }
+        sw.stop();
+        System.out.println(String.format("WriteOecdData complete [%f] s.", (sw.getTime() / 1000.0)));
     }
 }
